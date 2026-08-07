@@ -294,12 +294,29 @@ var SuratService = (function () {
     return SuratRepository.remove(id);
   }
 
+  /**
+   * Memperbarui status surat (digunakan saat konfirmasi penerimaan)
+   * @param {string} id - UUID surat
+   * @param {string} status - Status baru
+   * @returns {object} Surat yang diperbarui
+   * @throws {NotFoundError} Jika surat tidak ada
+   */
+  function updateStatus(id, status) {
+    var surat = SuratRepository.findById(id);
+    if (!surat) {
+      throw new NotFoundError('Surat tidak ditemukan');
+    }
+    SuratRepository.update(id, { status: status });
+    return SuratRepository.findById(id);
+  }
+
   return {
     getAll: getAll,
     getById: getById,
     create: create,
     update: update,
     remove: remove,
+    updateStatus: updateStatus,
     validatePdf: validatePdf,
     MAX_FILE_SIZE_BYTES: MAX_FILE_SIZE_BYTES,
   };

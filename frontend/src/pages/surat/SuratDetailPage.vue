@@ -168,6 +168,13 @@ onMounted(async () => {
       <h3 class="text-xl font-semibold text-slate-900">Detail Surat</h3>
       <div class="ml-auto flex flex-wrap gap-2">
         <Button
+          v-if="surat && surat.status === 'menunggu_pengambilan' && (auth.isAdmin || auth.isSuperAdmin)"
+          label="Konfirmasi"
+          icon="pi pi-check-circle"
+          severity="success"
+          @click="router.push(`/penerimaan/${surat.ekspedisi_id}`)"
+        />
+        <Button
           v-if="surat && surat.status !== 'diterima' && (auth.isAdmin || auth.isSuperAdmin)"
           label="Edit"
           icon="pi pi-pencil"

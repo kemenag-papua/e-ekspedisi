@@ -9,6 +9,12 @@ const routes = [
     meta: { public: true, title: 'Login' },
   },
   {
+    path: '/verify/:id',
+    name: 'verify',
+    component: () => import('@/pages/konfirmasi/VerifyPage.vue'),
+    meta: { public: true, title: 'Verifikasi Dokumen' },
+  },
+  {
     path: '/',
     component: () => import('@/layouts/DefaultLayout.vue'),
     meta: { requiresAuth: true },
@@ -82,6 +88,12 @@ const routes = [
         name: 'pegawai-edit',
         component: () => import('@/pages/pegawai/PegawaiFormPage.vue'),
         meta: { title: 'Edit Pegawai', roles: ['super_admin'] },
+      },
+      {
+        path: 'penerimaan/:ekspedisiId',
+        name: 'konfirmasi',
+        component: () => import('@/pages/konfirmasi/KonfirmasiFormPage.vue'),
+        meta: { title: 'Konfirmasi Penerimaan', roles: ['super_admin', 'admin'] },
       },
       {
         path: 'pengaturan',

@@ -84,6 +84,26 @@ var DriveRepository = (function () {
   }
 
   /**
+   * Upload foto penerima
+   * @param {string} base64Data - Data foto dalam base64
+   * @param {string} fileName - Nama file
+   * @returns {object} { id, name, url }
+   */
+  function uploadFoto(base64Data, fileName) {
+    return uploadFile(base64Data, fileName, FOLDERS.FOTO, 'image/png');
+  }
+
+  /**
+   * Upload signature/tanda tangan
+   * @param {string} base64Data - Data signature dalam base64
+   * @param {string} fileName - Nama file
+   * @returns {object} { id, name, url }
+   */
+  function uploadSignature(base64Data, fileName) {
+    return uploadFile(base64Data, fileName, FOLDERS.SIGNATURE, 'image/png');
+  }
+
+  /**
    * Mendapatkan file dari Google Drive
    * @param {string} fileId - ID file
    * @returns {GoogleAppsScript.Drive.File|null}
@@ -137,6 +157,8 @@ var DriveRepository = (function () {
     getFolder: getFolder,
     uploadFile: uploadFile,
     uploadPdf: uploadPdf,
+    uploadFoto: uploadFoto,
+    uploadSignature: uploadSignature,
     getFile: getFile,
     deleteFile: deleteFile,
     getFileUrl: getFileUrl,

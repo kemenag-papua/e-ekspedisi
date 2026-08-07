@@ -15,7 +15,10 @@
  */
 
 var DatabaseConfig = (function () {
-  // TODO: Ganti dengan ID Spreadsheet aktual setelah Spreadsheet dibuat
+  // TODO: Ganti dengan ID Spreadsheet aktual
+  // Cara mendapatkan ID:
+  // 1. Jalankan scripts/setup-spreadsheet.gs di Google Apps Script Editor
+  // 2. Salin nilai SPREADSHEET_ID dari log hasil setup
   var SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID';
 
   var SHEETS = {
