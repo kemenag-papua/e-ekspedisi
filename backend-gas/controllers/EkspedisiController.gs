@@ -39,7 +39,7 @@ var EkspedisiController = (function () {
       var newToken = EkspedisiService.generateQrToken();
       var updated = EkspedisiRepository.update(ekspedisi.id, { qr_token: newToken });
       var username = auth.user.username || 'system';
-      AuditService.log(username, 'REGENERATE_QR', 'ekspedisi', 'Success');
+      AuditService.log(username, 'REGENERATE_QR', 'ekspedisi', 'Success', ekspedisi.surat_id);
       return BaseController.sendSuccess(updated, 'QR berhasil diperbarui');
     } catch (e) {
       return BaseController.sendError(ErrorHandler.handleError(e));

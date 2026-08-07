@@ -45,6 +45,27 @@ var SuratController = (function () {
   }
 
   /**
+   * GET /api/v1/surat/{id}/history
+   * Riwayat aktivitas per surat
+   */
+  function history(parsed) {
+    var auth = AuthMiddleware.requireAdmin(parsed);
+    if (auth.error) {
+      return BaseController.sendError(auth.error);
+    }
+    try {
+      var surat = SuratService.getById(parsed.params.id);
+      var history = AuditService.getAll({ objek_id: surat.id });
+      return BaseController.sendSuccess(
+        { items: history, total: history.length },
+        'Riwayat surat'
+      );
+    } catch (e) {
+      return BaseController.sendError(ErrorHandler.handleError(e));
+    }
+  }
+
+  /**
    * POST /api/v1/surat
    */
   function create(parsed) {
@@ -100,6 +121,7 @@ var SuratController = (function () {
   function registerRoutes() {
     Router.add('GET', '/api/v1/surat', list);
     Router.add('GET', '/api/v1/surat/:id', detail);
+    Router.add('GET', '/api/v1/surat/:id/history', history);
     Router.add('POST', '/api/v1/surat', create);
     Router.add('PUT', '/api/v1/surat/:id', update);
     Router.add('DELETE', '/api/v1/surat/:id', remove);

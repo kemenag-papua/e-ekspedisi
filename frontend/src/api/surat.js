@@ -15,6 +15,11 @@ export const suratApi = {
     return data
   },
 
+  async getSuratHistory(id) {
+    const { data } = await apiClient.get(`/surat/${id}/history`)
+    return data
+  },
+
   async createSurat(payload) {
     const { data } = await apiClient.post('/surat', payload)
     return data

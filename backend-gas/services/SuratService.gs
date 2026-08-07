@@ -212,7 +212,8 @@ var SuratService = (function () {
     var ekspedisi = EkspedisiService.createForSurat(surat.id);
 
     var username = user ? user.username : 'system';
-    AuditService.log(username, 'CREATE_SURAT', 'surat_keluar', 'Success');
+    AuditService.log(username, 'CREATE_SURAT', 'surat_keluar', 'Success', surat.id);
+    AuditService.log(username, 'CREATE_EKSPEDISI', 'ekspedisi', 'Success', surat.id);
 
     return {
       surat: enrichSurat(surat, [unit], [ekspedisi]),
@@ -264,7 +265,7 @@ var SuratService = (function () {
 
     var updated = SuratRepository.update(id, updateData);
     var username = user ? user.username : 'system';
-    AuditService.log(username, 'UPDATE_SURAT', 'surat_keluar', 'Success');
+    AuditService.log(username, 'UPDATE_SURAT', 'surat_keluar', 'Success', id);
     return getById(id);
   }
 
@@ -289,7 +290,7 @@ var SuratService = (function () {
     }
 
     var username = user ? user.username : 'system';
-    AuditService.log(username, 'DELETE_SURAT', 'surat_keluar', 'Success');
+    AuditService.log(username, 'DELETE_SURAT', 'surat_keluar', 'Success', id);
     return SuratRepository.remove(id);
   }
 

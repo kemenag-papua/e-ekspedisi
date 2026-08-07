@@ -82,6 +82,7 @@ function registerRoutes() {
   PegawaiController.registerRoutes();
   SuratController.registerRoutes();
   EkspedisiController.registerRoutes();
+  AuditController.registerRoutes();
 }
 
 registerRoutes();
