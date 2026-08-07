@@ -36,6 +36,42 @@ const routes = [
         meta: { title: 'Tambah Surat', roles: ['super_admin', 'admin'] },
       },
       {
+        path: 'master/unit',
+        name: 'unit',
+        component: () => import('@/pages/unit/UnitListPage.vue'),
+        meta: { title: 'Master Unit', roles: ['super_admin', 'admin'] },
+      },
+      {
+        path: 'master/unit/tambah',
+        name: 'unit-tambah',
+        component: () => import('@/pages/unit/UnitFormPage.vue'),
+        meta: { title: 'Tambah Unit', roles: ['super_admin'] },
+      },
+      {
+        path: 'master/unit/:id/edit',
+        name: 'unit-edit',
+        component: () => import('@/pages/unit/UnitFormPage.vue'),
+        meta: { title: 'Edit Unit', roles: ['super_admin'] },
+      },
+      {
+        path: 'master/pegawai',
+        name: 'pegawai',
+        component: () => import('@/pages/pegawai/PegawaiListPage.vue'),
+        meta: { title: 'Master Pegawai', roles: ['super_admin', 'admin'] },
+      },
+      {
+        path: 'master/pegawai/tambah',
+        name: 'pegawai-tambah',
+        component: () => import('@/pages/pegawai/PegawaiFormPage.vue'),
+        meta: { title: 'Tambah Pegawai', roles: ['super_admin'] },
+      },
+      {
+        path: 'master/pegawai/:id/edit',
+        name: 'pegawai-edit',
+        component: () => import('@/pages/pegawai/PegawaiFormPage.vue'),
+        meta: { title: 'Edit Pegawai', roles: ['super_admin'] },
+      },
+      {
         path: 'pengaturan',
         name: 'pengaturan',
         component: () => import('@/pages/PengaturanPage.vue'),

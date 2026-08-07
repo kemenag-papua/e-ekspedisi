@@ -26,7 +26,16 @@ var DatabaseConfig = (function () {
     MASTER_UNIT: 'master_unit',
     KONFIGURASI: 'konfigurasi',
     AUDIT_LOG: 'audit_log',
+    SESSION: 'session',
   };
+
+  /**
+   * Durasi session aktif (dalam jam)
+   * @returns {number}
+   */
+  function getSessionDurationHours() {
+    return 8;
+  }
 
   /**
    * Mendapatkan ID Spreadsheet
@@ -65,6 +74,7 @@ var DatabaseConfig = (function () {
     getSpreadsheetId: getSpreadsheetId,
     getSheetName: getSheetName,
     getAppConfig: getAppConfig,
+    getSessionDurationHours: getSessionDurationHours,
     SHEETS: SHEETS,
   };
 })();

@@ -16,6 +16,15 @@ const menuItems = computed(() => {
   }
   if (auth.isAdmin || auth.isSuperAdmin) {
     items.push({ name: 'Surat Keluar', to: '/surat', icon: 'pi pi-file' })
+    items.push({
+      name: 'Master Data',
+      to: '/master/unit',
+      icon: 'pi pi-database',
+      children: [
+        { name: 'Unit', to: '/master/unit', icon: 'pi pi-building' },
+        { name: 'Pegawai', to: '/master/pegawai', icon: 'pi pi-users' },
+      ],
+    })
   }
   if (auth.isSuperAdmin) {
     items.push({ name: 'Pengaturan', to: '/pengaturan', icon: 'pi pi-cog' })
@@ -49,21 +58,42 @@ async function handleLogout() {
       </div>
 
       <nav class="mt-4 space-y-1 px-3">
-        <RouterLink
-          v-for="item in menuItems"
-          :key="item.name"
-          :to="item.to"
-          class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium"
-          :class="
-            isActive(item.to)
-              ? 'bg-slate-800 text-white'
-              : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-          "
-          @click="sidebarOpen = false"
-        >
-          <i :class="item.icon"></i>
-          <span>{{ item.name }}</span>
-        </RouterLink>
+        <template v-for="item in menuItems" :key="item.name">
+          <div v-if="item.children">
+            <p class="mb-1 mt-4 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+              {{ item.name }}
+            </p>
+            <RouterLink
+              v-for="child in item.children"
+              :key="child.name"
+              :to="child.to"
+              class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium"
+              :class="
+                isActive(child.to)
+                  ? 'bg-slate-800 text-white'
+                  : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+              "
+              @click="sidebarOpen = false"
+            >
+              <i :class="child.icon"></i>
+              <span>{{ child.name }}</span>
+            </RouterLink>
+          </div>
+          <RouterLink
+            v-else
+            :to="item.to"
+            class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium"
+            :class="
+              isActive(item.to)
+                ? 'bg-slate-800 text-white'
+                : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+            "
+            @click="sidebarOpen = false"
+          >
+            <i :class="item.icon"></i>
+            <span>{{ item.name }}</span>
+          </RouterLink>
+        </template>
       </nav>
 
       <div class="absolute inset-x-0 bottom-0 border-t border-slate-800 p-4">

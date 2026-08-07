@@ -2,10 +2,10 @@
  * AuthMiddleware.gs
  *
  * Middleware autentikasi dan otorisasi (RBAC).
- * Dikembangkan lengkap pada Sprint 2 (Docs/12-Project-Roadmap-Sprint-Backlog.md).
- *
- * Saat ini menyediakan skeleton dengan fungsi yang akan diimplementasikan
- * pada sprint berikutnya.
+ * Mengacu pada Docs/08-Security-Compliance.md:
+ * - BR-SEC-001: Hak akses menggunakan RBAC.
+ * - BR-SEC-002: Setiap endpoint harus memverifikasi autentikasi.
+ * - BR-USR-001: 4 peran (Super Admin, Admin, Penerima, Pimpinan).
  */
 
 var AuthMiddleware = (function () {
@@ -17,27 +17,40 @@ var AuthMiddleware = (function () {
   };
 
   /**
-   * Mendapatkan current user dari session/token
-   * TODO: Implementasi pada Sprint 2
+   * Mendapatkan token dari header Authorization
+   * @param {object} request - Event request
+   * @returns {string} Token atau string kosong
+   */
+  function getToken(request) {
+    var headers = request.headers || {};
+    var authHeader = headers['Authorization'] || headers['authorization'] || '';
+    if (!authHeader || authHeader.indexOf('Bearer ') !== 0) {
+      return '';
+    }
+    return authHeader.substring(7);
+  }
+
+  /**
+   * Mendapatkan current user dari token (validasi ke session)
    * @param {object} request - Event request
    * @returns {object|null} User object atau null
    */
   function getCurrentUser(request) {
-    var headers = request.headers || {};
-    var authHeader = headers['Authorization'] || headers['authorization'] || '';
-    if (!authHeader || authHeader.indexOf('Bearer ') !== 0) {
+    var token = getToken(request);
+    if (!token) return null;
+    try {
+      return AuthService.getUserFromToken(token);
+    } catch (e) {
+      Logger.warn('AuthMiddleware', 'Gagal validasi token', e.message);
       return null;
     }
-    var token = authHeader.substring(7);
-    // TODO: Sprint 2 - validate token terhadap session
-    return token ? { id: 'placeholder', role: ROLES.ADMIN } : null;
   }
 
   /**
    * Middleware autentikasi
    * @param {object} request - Event request
    * @param {Array} allowedRoles - Roles yang diizinkan (RBAC)
-   * @returns {object|null} User atau error response
+   * @returns {object} { user } atau { error }
    */
   function authenticate(request, allowedRoles) {
     var user = getCurrentUser(request);
@@ -79,6 +92,7 @@ var AuthMiddleware = (function () {
 
   return {
     ROLES: ROLES,
+    getToken: getToken,
     getCurrentUser: getCurrentUser,
     authenticate: authenticate,
     requireSuperAdmin: requireSuperAdmin,
