@@ -36,6 +36,18 @@ const routes = [
         meta: { title: 'Tambah Surat', roles: ['super_admin', 'admin'] },
       },
       {
+        path: 'surat/:id',
+        name: 'surat-detail',
+        component: () => import('@/pages/surat/SuratDetailPage.vue'),
+        meta: { title: 'Detail Surat', roles: ['super_admin', 'admin'] },
+      },
+      {
+        path: 'surat/:id/edit',
+        name: 'surat-edit',
+        component: () => import('@/pages/surat/SuratFormPage.vue'),
+        meta: { title: 'Edit Surat', roles: ['super_admin', 'admin'] },
+      },
+      {
         path: 'master/unit',
         name: 'unit',
         component: () => import('@/pages/unit/UnitListPage.vue'),

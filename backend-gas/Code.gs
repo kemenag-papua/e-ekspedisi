@@ -73,7 +73,6 @@ Router.add('GET', '/api/v1/health', function () {
 
 /**
  * Registrasi route module (dipanggil pada sprint berikutnya)
- * TODO: Sprint 3 - SuratController.registerRoutes()
  * TODO: Sprint 5 - PenerimaanController.registerRoutes()
  * TODO: Sprint 7 - DashboardController.registerRoutes()
  */
@@ -81,6 +80,8 @@ function registerRoutes() {
   AuthController.registerRoutes();
   MasterUnitController.registerRoutes();
   PegawaiController.registerRoutes();
+  SuratController.registerRoutes();
+  EkspedisiController.registerRoutes();
 }
 
 registerRoutes();

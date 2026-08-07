@@ -29,34 +29,43 @@ var ErrorHandler = (function () {
     var status = e.status || e.statusCode || 500;
     var message = e.message || 'Kesalahan server';
     var errors = e.errors || [];
+    var errorCode = e.errorCode || null;
 
     if (e instanceof ValidationError) {
       status = 400;
       message = e.message;
       errors = e.errors;
+      errorCode = e.errorCode;
     } else if (e instanceof AuthError) {
       status = e.status;
       message = e.message;
     } else if (e instanceof NotFoundError) {
       status = 404;
       message = e.message;
+      errorCode = e.errorCode;
     } else if (e instanceof ConflictError) {
       status = 409;
       message = e.message;
+      errorCode = e.errorCode;
     }
 
     Logger.error('ErrorHandler', message, {
       status: status,
       errors: errors,
+      errorCode: errorCode,
       stack: e.stack,
     });
 
-    return {
+    var response = {
       success: false,
       message: message,
       errors: errors,
       status: status,
     };
+    if (errorCode) {
+      response.errorCode = errorCode;
+    }
+    return response;
   }
 
   return {
@@ -69,11 +78,12 @@ var ErrorHandler = (function () {
  * Custom Error Classes
  */
 
-function ValidationError(message, errors) {
+function ValidationError(message, errors, errorCode) {
   this.name = 'ValidationError';
   this.message = message || 'Validation Error';
   this.errors = errors || [];
   this.status = 400;
+  this.errorCode = errorCode || null;
 }
 
 ValidationError.prototype = Object.create(Error.prototype);
@@ -88,19 +98,21 @@ function AuthError(message, status) {
 AuthError.prototype = Object.create(Error.prototype);
 AuthError.prototype.constructor = AuthError;
 
-function NotFoundError(message) {
+function NotFoundError(message, errorCode) {
   this.name = 'NotFoundError';
   this.message = message || 'Data tidak ditemukan';
   this.status = 404;
+  this.errorCode = errorCode || null;
 }
 
 NotFoundError.prototype = Object.create(Error.prototype);
 NotFoundError.prototype.constructor = NotFoundError;
 
-function ConflictError(message) {
+function ConflictError(message, errorCode) {
   this.name = 'ConflictError';
   this.message = message || 'Data duplikat';
   this.status = 409;
+  this.errorCode = errorCode || null;
 }
 
 ConflictError.prototype = Object.create(Error.prototype);
