@@ -1,0 +1,1 @@
+import{r as e}from"./index-TlvoOYAo.js";var t={async getEkspedisi(t){let{data:n}=await e.get(`/ekspedisi/${t}`);return n},async regenerateQr(t){let{data:n}=await e.post(`/ekspedisi/${t}/qr`);return n}};export{t};
