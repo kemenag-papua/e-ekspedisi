@@ -57,23 +57,45 @@ function ensureSheet(ss, name, headers) {
 
 /**
  * Main setup function
+ * Idempotent: jika dijalankan ulang, akan memakai Spreadsheet yang sama
+ * (tidak membuat Spreadsheet baru lagi).
  * @returns {string} Spreadsheet ID
  */
 function setupDatabase() {
-  // 1. Buat Spreadsheet baru
-  var ss = SpreadsheetApp.create('e-Ekspedisi - Database');
+  var props = PropertiesService.getScriptProperties();
+
+  // 1. Gunakan Spreadsheet yang sudah ada jika pernah dibuat
+  var ss = null;
+  var existingId = props.getProperty('SPREADSHEET_ID');
+  if (existingId) {
+    try {
+      ss = SpreadsheetApp.openById(existingId);
+      Logger.log('==> Memakai Spreadsheet yang sudah ada: ' + ss.getUrl());
+    } catch (e) {
+      Logger.log('==> Spreadsheet tersimpan tidak ditemukan, cari alternatif...');
+      ss = null;
+    }
+  }
+  if (!ss) {
+    // 1b. Reuse Spreadsheet hasil run sebelumnya yang gagal (agar tidak duplikat)
+    var candidates = DriveApp.getFilesByName('e-Ekspedisi - Database');
+    if (candidates.hasNext()) {
+      var existingFile = candidates.next();
+      ss = SpreadsheetApp.openById(existingFile.getId());
+      Logger.log('==> Memakai Spreadsheet hasil run sebelumnya: ' + ss.getUrl());
+    }
+  }
+  if (!ss) {
+    ss = SpreadsheetApp.create('e-Ekspedisi - Database');
+    Logger.log('==> Spreadsheet baru dibuat: ' + ss.getUrl());
+  }
   var spreadsheetId = ss.getId();
   var scriptUrl = ScriptApp.getService().getUrl();
 
-  Logger.log('==> Spreadsheet dibuat: ' + ss.getUrl());
-
-  // 2. Hapus sheet default (Sheet1)
-  var defaultSheet = ss.getSheetByName('Sheet1');
-  if (defaultSheet) {
-    ss.deleteSheet(defaultSheet);
-  }
-
-  // 3. Buat 8 sheet dengan header
+  // 2. Buat 8 sheet dengan header
+  // CATATAN: sheet default "Sheet1" TIDAK dihapus di sini.
+  // Apps Script tidak mengizinkan menghapus semua sheet dalam dokumen,
+  // sehingga Sheet1 dihapus TERAKHIR setelah sheet lain dibuat.
   ensureSheet(ss, 'surat_keluar', [
     'id', 'nomor_surat', 'tanggal_surat', 'perihal', 'unit_id',
     'file_pdf', 'status', 'created_by', 'created_at', 'updated_at',
@@ -101,47 +123,75 @@ function setupDatabase() {
     'id', 'user_id', 'token', 'created_at', 'expires_at', 'is_active',
   ]);
 
-  // 4. Seed master_unit
+  // 2b. Hapus sheet default (Sheet1/dll) SETELAH sheet lain dibuat.
+  // Guard: hanya hapus jika jumlah sheet lebih dari 1.
+  var defaultSheets = ss.getSheets().filter(function (s) {
+    return (
+      s.getName() === 'Sheet1' ||
+      s.getName() === 'Sheet2' ||
+      s.getName() === 'Sheet3'
+    );
+  });
+  for (var d = 0; d < defaultSheets.length; d++) {
+    if (ss.getSheets().length > 1) {
+      ss.deleteSheet(defaultSheets[d]);
+    }
+  }
+
+  // 4. Seed master_unit (hanya jika sheet masih kosong, agar idempotent)
   var now = new Date();
-  var unitIds = {
-    sekretariat: Utilities.getUuid(),
-    umum: Utilities.getUuid(),
-    keuangan: Utilities.getUuid(),
-  };
-  var unitRows = [
-    [unitIds.sekretariat, 'Sekretariat', 'Unit kesekretariatan', now, now],
-    [unitIds.umum, 'Bagian Umum', 'Unit pelayanan umum', now, now],
-    [unitIds.keuangan, 'Bagian Keuangan', 'Unit pengelolaan keuangan', now, now],
-  ];
-  ss.getSheetByName('master_unit').getRange(2, 1, unitRows.length, 5).setValues(unitRows);
+  if (ss.getSheetByName('master_unit').getLastRow() <= 1) {
+    var unitIds = {
+      sekretariat: Utilities.getUuid(),
+      umum: Utilities.getUuid(),
+      keuangan: Utilities.getUuid(),
+    };
+    var unitRows = [
+      [unitIds.sekretariat, 'Sekretariat', 'Unit kesekretariatan', now, now],
+      [unitIds.umum, 'Bagian Umum', 'Unit pelayanan umum', now, now],
+      [unitIds.keuangan, 'Bagian Keuangan', 'Unit pengelolaan keuangan', now, now],
+    ];
+    ss.getSheetByName('master_unit').getRange(2, 1, unitRows.length, 5).setValues(unitRows);
+  } else {
+    Logger.log('==> master_unit sudah berisi data, lewati seed.');
+  }
 
   // 5. Seed super admin (username: admin, password: Admin123!)
-  var adminPassword = 'Admin123!';
-  var adminRows = [[
-    Utilities.getUuid(),
-    'Administrator',
-    'admin',
-    hashPassword(adminPassword),
-    'super_admin',
-    unitIds.sekretariat,
-    '',
-    '',
-    'true',
-    now,
-    now,
-  ]];
-  ss.getSheetByName('pegawai').getRange(2, 1, 1, 11).setValues(adminRows);
+  // Hanya jika sheet pegawai masih kosong (idempotent)
+  if (ss.getSheetByName('pegawai').getLastRow() <= 1) {
+    var adminPassword = 'Admin123!';
+    var adminRows = [[
+      Utilities.getUuid(),
+      'Administrator',
+      'admin',
+      hashPassword(adminPassword),
+      'super_admin',
+      unitIds ? unitIds.sekretariat : '',
+      '',
+      '',
+      'true',
+      now,
+      now,
+    ]];
+    ss.getSheetByName('pegawai').getRange(2, 1, 1, 11).setValues(adminRows);
+  } else {
+    var adminPassword = '(tidak diubah - pegawai sudah ada)';
+    Logger.log('==> pegawai sudah berisi data, lewati seed admin.');
+  }
 
-  // 6. Seed konfigurasi
-  var configRows = [
-    ['gps_enabled', 'true', 'GPS wajib pada konfirmasi penerimaan'],
-    ['max_upload_mb', '5', 'Batas maksimal ukuran file upload (MB)'],
-    ['nama_instansi', 'Instansi Pemerintah', 'Nama instansi untuk bukti penerimaan'],
-  ];
-  ss.getSheetByName('konfigurasi').getRange(2, 1, configRows.length, 3).setValues(configRows);
+  // 6. Seed konfigurasi (hanya jika kosong)
+  if (ss.getSheetByName('konfigurasi').getLastRow() <= 1) {
+    var configRows = [
+      ['gps_enabled', 'true', 'GPS wajib pada konfirmasi penerimaan'],
+      ['max_upload_mb', '5', 'Batas maksimal ukuran file upload (MB)'],
+      ['nama_instansi', 'Instansi Pemerintah', 'Nama instansi untuk bukti penerimaan'],
+    ];
+    ss.getSheetByName('konfigurasi').getRange(2, 1, configRows.length, 3).setValues(configRows);
+  } else {
+    Logger.log('==> konfigurasi sudah berisi data, lewati seed.');
+  }
 
   // 7. Buat folder di Google Drive
-  var rootFolder = DriveApp.getFolderById(DriveApp.getRootFolder().getId());
   var eeksFolder = DriveApp.getFoldersByName('e-Ekspedisi').hasNext()
     ? DriveApp.getFoldersByName('e-Ekspedisi').next()
     : DriveApp.createFolder('e-Ekspedisi');
@@ -153,7 +203,6 @@ function setupDatabase() {
   }
 
   // 8. Simpan konfigurasi di Script Properties
-  var props = PropertiesService.getScriptProperties();
   props.setProperty('SPREADSHEET_ID', spreadsheetId);
   props.setProperty('GPS_ENABLED', 'true');
 
@@ -163,6 +212,9 @@ function setupDatabase() {
   Logger.log('Username admin = admin');
   Logger.log('Password admin = ' + adminPassword);
   Logger.log('Script URL = ' + scriptUrl);
+  Logger.log('==> PENTING: Bagikan Spreadsheet ke seluruh pengguna aplikasi');
+  Logger.log('    (Drive -> Share -> tambahkan email pengguna sebagai Editor),');
+  Logger.log('    karena web app berjalan sebagai user yang mengakses.');
 
   Logger.log('==> SALIN SPREADSHEET_ID di atas ke backend-gas/config/DatabaseConfig.gs');
 
