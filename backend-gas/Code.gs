@@ -51,8 +51,33 @@ function handleRequest(e) {
       path: parsed.path,
     });
 
-    // TODO: Sprint 2 - integrasi AuthMiddleware
-    // TODO: Sprint 3+ - registrasi route controller
+    // Hardening (Sprint 9):
+    // 1. Rate limit per token (kecuali endpoint publik dengan batas sendiri)
+    var token = AuthMiddleware.getToken(e) || '';
+    var isPublic = parsed.path.indexOf('/api/v1/verify/') === 0 || parsed.path === '/api/v1/health';
+    if (!isPublic && !RateLimitService.isAllowed(token)) {
+      return ContentService.createTextOutput(
+        JSON.stringify(
+          ResponseHelper.error(
+            'Terlalu banyak permintaan. Coba lagi dalam ' + RateLimitService.windowResetInSeconds() + ' detik.',
+            429,
+            []
+          )
+        )
+      ).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 2. Validasi ukuran request body
+    if (parsed.body && !SecurityMiddleware.isRequestSizeValid(parsed.body)) {
+      return ContentService.createTextOutput(
+        JSON.stringify(ResponseHelper.error('Ukuran request melebihi batas', 413, []))
+      ).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 3. Sanitasi body (strip pola berbahaya - anti XSS/injection)
+    if (parsed.body) {
+      parsed.body = SecurityMiddleware.sanitizeBody(parsed.body);
+    }
 
     var result = AppRouter.dispatch(parsed);
     if (result === null) {

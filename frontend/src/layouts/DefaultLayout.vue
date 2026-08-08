@@ -1,6 +1,7 @@
 <script setup>
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { ref, computed } from 'vue'
+import Toast from 'primevue/toast'
 import { useAuthStore } from '@/stores/auth'
 
 const route = useRoute()
@@ -46,6 +47,7 @@ async function handleLogout() {
 
 <template>
   <div class="min-h-screen bg-slate-50">
+    <Toast />
     <aside
       class="fixed inset-y-0 left-0 z-40 w-64 bg-slate-900 text-white transition-transform duration-200 lg:translate-x-0"
       :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"

@@ -24,6 +24,9 @@ export const useAuthStore = defineStore('auth', {
         this.user = response.data.user
         localStorage.setItem('auth_token', this.token)
         localStorage.setItem('auth_user', JSON.stringify(this.user))
+        if (response.data.token_expires_at) {
+          localStorage.setItem('auth_token_expires', new Date(response.data.token_expires_at).getTime())
+        }
         return response
       } finally {
         this.loading = false
@@ -40,6 +43,7 @@ export const useAuthStore = defineStore('auth', {
         this.user = null
         localStorage.removeItem('auth_token')
         localStorage.removeItem('auth_user')
+        localStorage.removeItem('auth_token_expires')
       }
     },
 

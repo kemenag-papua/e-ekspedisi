@@ -15,11 +15,14 @@ var MasterUnitRepository = (function () {
 
   /**
    * Mendapatkan seluruh unit kerja
+   * Menggunakan cache 5 menit (Sprint 9 - performa)
    * @returns {Array} Daftar unit
    */
   function getAll() {
-    var repo = new BaseRepository(DatabaseConfig.getSpreadsheetId());
-    return repo.getAll(SHEET_NAME());
+    return CacheHelper.getCached('master_unit_all', function () {
+      var repo = new BaseRepository(DatabaseConfig.getSpreadsheetId());
+      return repo.getAll(SHEET_NAME());
+    }, 300);
   }
 
   /**

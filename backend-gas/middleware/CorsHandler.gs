@@ -60,10 +60,13 @@ var CorsHandler = (function () {
   }
 
   /**
-   * Menambahkan header CORS ke response
+   * Menambahkan header CORS ke response.
+   * Catatan: GAS ContentService tidak mendukung custom headers.
+   * Untuk Web App deployment, Google menangani CORS pada response aktual.
+   * Fungsi ini memastikan MIME type JSON.
    * @param {object} response - Response dari ContentService
    * @param {object} request - Event request
-   * @returns {object} Response dengan header CORS
+   * @returns {object} Response dengan MIME JSON
    */
   function addCorsHeaders(response, request) {
     var origin = getOrigin(request);

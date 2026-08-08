@@ -59,18 +59,21 @@ var DatabaseConfig = (function () {
 
   /**
    * Mendapatkan semua konfigurasi dari sheet konfigurasi
+   * Menggunakan cache 5 menit (Sprint 9 - performa)
    * @returns {object} Map konfigurasi
    */
   function getAppConfig() {
-    var repo = new BaseRepository(SPREADSHEET_ID);
-    var rows = repo.getAll(SHEETS.KONFIGURASI);
-    var config = {};
-    for (var i = 0; i < rows.length; i++) {
-      if (rows[i].key) {
-        config[rows[i].key] = rows[i].value;
+    return CacheHelper.getCached('konfigurasi_all', function () {
+      var repo = new BaseRepository(SPREADSHEET_ID);
+      var rows = repo.getAll(SHEETS.KONFIGURASI);
+      var config = {};
+      for (var i = 0; i < rows.length; i++) {
+        if (rows[i].key) {
+          config[rows[i].key] = rows[i].value;
+        }
       }
-    }
-    return config;
+      return config;
+    }, 300);
   }
 
   return {

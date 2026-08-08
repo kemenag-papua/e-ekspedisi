@@ -46,7 +46,9 @@ var MasterUnitService = (function () {
       throw new ConflictError('Nama unit sudah digunakan');
     }
 
-    return MasterUnitRepository.insert(data);
+    var result = MasterUnitRepository.insert(data);
+    CacheHelper.invalidate('master_unit_all');
+    return result;
   }
 
   /**
@@ -65,7 +67,9 @@ var MasterUnitService = (function () {
       }
     }
 
-    return MasterUnitRepository.update(id, data);
+    var result = MasterUnitRepository.update(id, data);
+    CacheHelper.invalidate('master_unit_all');
+    return result;
   }
 
   /**
@@ -75,7 +79,9 @@ var MasterUnitService = (function () {
    */
   function remove(id) {
     getById(id);
-    return MasterUnitRepository.remove(id);
+    var result = MasterUnitRepository.remove(id);
+    CacheHelper.invalidate('master_unit_all');
+    return result;
   }
 
   return {

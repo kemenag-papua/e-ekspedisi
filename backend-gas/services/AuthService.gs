@@ -71,13 +71,14 @@ var AuthService = (function () {
     }
 
     var token = generateToken();
-    AuthRepository.createSession(user.id, token);
+    var session = AuthRepository.createSession(user.id, token);
 
     Logger.info('AuthService', 'Login berhasil', username);
     AuditService.log(username, 'LOGIN', 'auth', 'Success');
 
     return {
       token: token,
+      token_expires_at: session.expires_at,
       user: sanitizeUser(user),
     };
   }
@@ -105,7 +106,7 @@ var AuthService = (function () {
    */
   function getUserFromToken(token) {
     if (!token) return null;
-    AuthRepository.cleanupExpiredSessions();
+    maybeCleanupExpiredSessions();
     var session = AuthRepository.findSessionByToken(token);
     if (!session) return null;
     if (String(session.is_active) !== 'true') return null;
@@ -118,6 +119,25 @@ var AuthService = (function () {
 
     var user = AuthRepository.findById(session.user_id);
     return user ? sanitizeUser(user) : null;
+  }
+
+  /**
+   * Cleanup session expired secara berkala (setiap 100 request)
+   * untuk menghindari scan session penuh di setiap request (performa).
+   */
+  function maybeCleanupExpiredSessions() {
+    try {
+      var props = PropertiesService.getScriptProperties();
+      var count = parseInt(props.getProperty('REQ_COUNT') || '0', 10) + 1;
+      if (count >= 100) {
+        props.setProperty('REQ_COUNT', '0');
+        AuthRepository.cleanupExpiredSessions();
+      } else {
+        props.setProperty('REQ_COUNT', String(count));
+      }
+    } catch (e) {
+      Logger.warn('AuthService', 'Gagal cleanup session berkala', e.message);
+    }
   }
 
   /**
@@ -155,6 +175,7 @@ var AuthService = (function () {
     login: login,
     logout: logout,
     getUserFromToken: getUserFromToken,
+    maybeCleanupExpiredSessions: maybeCleanupExpiredSessions,
     validateToken: validateToken,
     sanitizeUser: sanitizeUser,
   };
