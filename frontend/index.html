@@ -6,6 +6,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="e-Ekspedisi - Sistem bukti penerimaan dokumen elektronik" />
     <title>e-Ekspedisi</title>
+    <script>
+      // GitHub Pages SPA routing support.
+      // Restore path dari ?path= (hasil redirect 404.html) sebelum Vue router inisialisasi.
+      ;(function () {
+        try {
+          var params = new URLSearchParams(window.location.search)
+          var path = params.get('path')
+          if (path) {
+            var cleanPath = decodeURIComponent(path)
+            var base = window.location.pathname.split('?')[0]
+            var target = base.replace(/index\.html$/, '') + cleanPath
+            window.history.replaceState({}, '', target)
+          }
+        } catch (e) {
+          // Abaikan, biarkan router berjalan dengan path normal
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="app"></div>

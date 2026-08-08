@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Redirect</title>
+    <script>
+      // GitHub Pages SPA routing fallback.
+      // Untuk path yang tidak ditemukan, GitHub Pages menyajikan file ini.
+      // Redirect ke index.html dengan path disimpan di query ?path=.
+      // index.html akan me-restore path tersebut sebelum Vue router berjalan.
+      ;(function () {
+        // Ganti dengan base path jika di-deploy di subpath GitHub Pages.
+        // Contoh subpath: username.github.io/e-ekspedisi  -> appBase = '/e-ekspedisi'
+        // Contoh root/custom domain: app.example.com      -> appBase = ''
+        var appBase = ''
+
+        var l = window.location
+        var fullPath = l.pathname + l.search
+        var path = fullPath
+        if (appBase && fullPath.indexOf(appBase) === 0) {
+          path = fullPath.substring(appBase.length)
+        }
+        window.location.replace(appBase + '/index.html?path=' + encodeURIComponent(path))
+      })()
+    </script>
+  </head>
+  <body>
+    <a href="./index.html">Kembali ke aplikasi</a>
+  </body>
+</html>

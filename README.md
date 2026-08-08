@@ -102,6 +102,70 @@ Buat Google Spreadsheet dengan sheet berikut (lihat `Docs/05-Database-Data-Dicti
 - `konfigurasi`
 - `audit_log`
 
+## Deployment Production
+
+### 1. Setup Database (Google Spreadsheet)
+
+1. Buka https://script.google.com → **New Project**
+2. Tempel isi `scripts/setup-spreadsheet.gs`
+3. Jalankan fungsi `setupDatabase()`
+4. Dari log, catat **SPREADSHEET_ID**
+5. Isi `SPREADSHEET_ID` di `backend-gas/config/DatabaseConfig.gs`
+6. Bagikan Spreadsheet ke seluruh pengguna aplikasi (Drive → Share → Editor)
+
+> Untuk data uji UAT: jalankan `seedTestData()` dari `scripts/seed-test-data.gs`.
+> Akun uji: `admin`, `adminpersuratan`, `pimpinan` (password: `Admin123!`).
+
+### 2. Deploy Backend (Google Apps Script)
+
+```bash
+# Pastikan .clasp.json sudah diisi scriptId
+clasp login
+clasp push -f
+```
+
+Lalu di Google Apps Script Editor:
+1. **Deploy → New deployment**
+2. Type: **Web app**
+3. Execute as: **User accessing the web app**
+4. Who has access: **Anyone**
+5. Catat **Web App URL** (contoh: `https://script.google.com/macros/s/xxxxx/exec`)
+6. Jalankan `updateAppUrl('https://url-frontend-anda')` dari `scripts/setup-spreadsheet.gs` untuk QR verifikasi di PDF
+
+### 3. Deploy Frontend (GitHub Pages / Server)
+
+```bash
+cd frontend
+# Set VITE_API_BASE_URL ke Web App URL backend
+cp .env.production .env.production.local
+# Edit .env.production.local: VITE_API_BASE_URL=https://script.google.com/macros/s/xxxxx/exec
+
+npm run build
+# Hasil build di frontend/dist
+```
+
+**Opsi A — GitHub Pages:**
+- SPA routing sudah ditangani via `public/404.html` + redirect di `index.html`
+- Jika di-deploy di subpath (`username.github.io/e-ekspedisi`), set `appBase` di `404.html`
+- Push ke GitHub → aktifkan Pages dari branch `main`
+
+**Opsi B — Server internal instansi:**
+- Upload isi `frontend/dist` ke web server
+- Konfigurasi web server agar semua path redirect ke `index.html` (SPA fallback)
+
+### 4. Verifikasi Go Live
+
+```bash
+bash scripts/deploy-production.sh  # panduan checklist deployment
+```
+
+Uji minimal:
+- Login berhasil
+- Buat surat → No. Ekspedisi otomatis
+- Konfirmasi penerimaan → status Diterima + PDF ter-generate
+- Dashboard menampilkan data
+- Export CSV laporan & audit
+
 ## Scripts
 
 | Command | Deskripsi |
