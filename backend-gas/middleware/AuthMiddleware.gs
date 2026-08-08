@@ -17,17 +17,30 @@ var AuthMiddleware = (function () {
   };
 
   /**
-   * Mendapatkan token dari header Authorization
-   * @param {object} request - Event request
+   * Mendapatkan token dari header Authorization atau query param (?token=)
+   * Menerima raw event dari GAS atau parsed request.
+   * @param {object} request - Event request atau parsed request
    * @returns {string} Token atau string kosong
    */
   function getToken(request) {
+    if (!request) return '';
+
+    // 1. Dari query param ?token= (strategi CORS - hindari header custom)
+    var queryToken = '';
+    if (request.query && request.query.token) {
+      queryToken = String(request.query.token);
+    } else if (request.parameter && request.parameter.token) {
+      queryToken = String(request.parameter.token);
+    }
+    if (queryToken) return queryToken;
+
+    // 2. Dari header Authorization: Bearer <token>
     var headers = request.headers || {};
     var authHeader = headers['Authorization'] || headers['authorization'] || '';
-    if (!authHeader || authHeader.indexOf('Bearer ') !== 0) {
-      return '';
+    if (authHeader && authHeader.indexOf('Bearer ') === 0) {
+      return authHeader.substring(7);
     }
-    return authHeader.substring(7);
+    return '';
   }
 
   /**

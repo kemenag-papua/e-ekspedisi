@@ -19,14 +19,13 @@ var RequestParser = (function () {
     var body = null;
 
     if (request.postData && request.postData.contents) {
+      // Frontend mengirim body sebagai text/plain (strategi CORS - hindari preflight).
+      // Body selalu berbentuk JSON string, jadi coba parse JSON apa pun content-type-nya.
       var contentType = (request.postData.type || '').toLowerCase();
-      if (contentType.indexOf('application/json') !== -1) {
-        try {
-          body = JSON.parse(request.postData.contents);
-        } catch (e) {
-          body = request.postData.contents;
-        }
-      } else {
+      try {
+        body = JSON.parse(request.postData.contents);
+      } catch (e) {
+        // Jika bukan JSON valid, gunakan sebagai string mentah
         body = request.postData.contents;
       }
     }

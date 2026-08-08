@@ -2,14 +2,33 @@ import axios from 'axios'
 
 /**
  * API Client untuk berkomunikasi dengan backend Google Apps Script.
- * Base URL dikonfigurasi via env variable VITE_API_BASE_URL.
+ *
+ * STRATEGI CORS (penting):
+ * Google Apps Script Web App TIDAK bisa menambahkan custom CORS headers
+ * pada response ContentService, sehingga request dengan Content-Type:
+ * application/json + header Authorization memicu preflight yang diblokir
+ * browser (CORS error).
+ *
+ * Solusi: hindari preflight dengan:
+ * - Content-Type: text/plain (content type sederhana, tidak preflight)
+ * - Body dikirim sebagai JSON string
+ * - Token dikirim via query param ?token= (bukan header Authorization)
  */
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1',
-  timeout: 15000,
+  timeout: 20000,
   headers: {
-    'Content-Type': 'application/json',
+    'Content-Type': 'text/plain',
   },
+  // Ubah body object menjadi JSON string (karena content-type text/plain)
+  transformRequest: [
+    (data) => {
+      if (data && typeof data === 'object') {
+        return JSON.stringify(data)
+      }
+      return data
+    },
+  ],
 })
 
 /**
@@ -45,7 +64,8 @@ apiClient.interceptors.request.use(
     }
     const token = localStorage.getItem('auth_token')
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`
+      // Kirim token via query param (bukan header) untuk hindari CORS preflight
+      config.params = { ...(config.params || {}), token }
     }
     return config
   },
