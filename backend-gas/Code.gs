@@ -9,10 +9,10 @@
  */
 
 /**
- * Global router instance
- * @type {object}
+ * Flag untuk memastikan route hanya diregistrasi sekali per konteks eksekusi.
+ * Mengatasi bug urutan load file di GAS (Code.gs bisa di-load sebelum Router.gs).
  */
-var AppRouter = Router;
+var routesRegistered = false;
 
 /**
  * Menangani GET request
@@ -45,6 +45,7 @@ function doPost(e) {
  */
 function handleRequest(e) {
   return ErrorHandler.run(function () {
+    ensureRoutesRegistered();
     var parsed = RequestParser.parse(e);
     Logger.info('Code', 'Incoming request', {
       method: parsed.method,
@@ -79,7 +80,7 @@ function handleRequest(e) {
       parsed.body = SecurityMiddleware.sanitizeBody(parsed.body);
     }
 
-    var result = AppRouter.dispatch(parsed);
+    var result = Router.dispatch(parsed);
     if (result === null) {
       return ContentService.createTextOutput(
         JSON.stringify(ResponseHelper.notFound('Endpoint'))
@@ -92,14 +93,15 @@ function handleRequest(e) {
 /**
  * Endpoint untuk health check
  */
-Router.add('GET', '/api/v1/health', function () {
+function healthHandler() {
   return BaseController.sendSuccess({ status: 'ok', timestamp: DateUtils.toIsoString(DateUtils.now()) }, 'OK');
-});
+}
 
 /**
- * Registrasi route module
+ * Registrasi route module (idempotent)
  */
 function registerRoutes() {
+  Router.add('GET', '/api/v1/health', healthHandler);
   AuthController.registerRoutes();
   MasterUnitController.registerRoutes();
   PegawaiController.registerRoutes();
@@ -112,4 +114,14 @@ function registerRoutes() {
   ReportsController.registerRoutes();
 }
 
-registerRoutes();
+/**
+ * Memastikan route ter-registrasi (dipanggil di setiap request).
+ * Diregistrasi saat pertama kali, bukan di global scope,
+ * agar tidak bergantung pada urutan load file di GAS.
+ */
+function ensureRoutesRegistered() {
+  if (!routesRegistered) {
+    registerRoutes();
+    routesRegistered = true;
+  }
+}
