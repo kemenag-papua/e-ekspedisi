@@ -7,6 +7,7 @@ import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import Button from 'primevue/button'
 import { auditApi } from '@/api/audit'
+import { exportToCsv } from '@/utils/csv'
 
 const toast = useToast()
 
@@ -67,6 +68,19 @@ async function loadData() {
   }
 }
 
+function handleExport() {
+  const headers = ['Waktu', 'Pengguna', 'Aktivitas', 'Objek', 'Hasil']
+  const rows = logs.value.map((l) => [
+    formatWaktu(l.waktu),
+    l.user,
+    aksiLabel(l.aksi),
+    l.objek,
+    l.hasil,
+  ])
+  exportToCsv(headers, rows, `audit-trail-${new Date().toISOString().split('T')[0]}`)
+  toast.add({ severity: 'success', summary: 'Berhasil', detail: 'Audit log diekspor', life: 3000 })
+}
+
 onMounted(loadData)
 </script>
 
@@ -92,7 +106,10 @@ onMounted(loadData)
         class="w-full sm:w-64"
         @change="loadData"
       />
-      <Button label="Cari" icon="pi pi-search" @click="loadData" />
+      <div class="flex gap-2">
+        <Button label="Cari" icon="pi pi-search" @click="loadData" />
+        <Button label="Export CSV" icon="pi pi-download" severity="success" :disabled="logs.length === 0" @click="handleExport" />
+      </div>
     </div>
 
     <div class="rounded-xl border border-slate-200 bg-white shadow-sm">

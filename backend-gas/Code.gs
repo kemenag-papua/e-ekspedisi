@@ -84,6 +84,7 @@ function registerRoutes() {
   PenerimaanController.registerRoutes();
   VerifyController.registerRoutes();
   DashboardController.registerRoutes();
+  ReportsController.registerRoutes();
 }
 
 registerRoutes();

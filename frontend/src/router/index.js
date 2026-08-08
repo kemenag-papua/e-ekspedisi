@@ -102,6 +102,12 @@ const routes = [
         meta: { title: 'Audit Trail', roles: ['super_admin', 'admin'] },
       },
       {
+        path: 'reports',
+        name: 'reports',
+        component: () => import('@/pages/reports/ReportsPage.vue'),
+        meta: { title: 'Laporan', roles: ['super_admin', 'admin', 'pimpinan'] },
+      },
+      {
         path: 'pengaturan',
         name: 'pengaturan',
         component: () => import('@/pages/PengaturanPage.vue'),

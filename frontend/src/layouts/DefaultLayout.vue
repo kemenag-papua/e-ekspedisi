@@ -27,6 +27,9 @@ const menuItems = computed(() => {
     })
     items.push({ name: 'Audit Trail', to: '/audit', icon: 'pi pi-history' })
   }
+  if (auth.isAdmin || auth.isSuperAdmin || auth.isPimpinan) {
+    items.push({ name: 'Laporan', to: '/reports', icon: 'pi pi-chart-bar' })
+  }
   if (auth.isSuperAdmin) {
     items.push({ name: 'Pengaturan', to: '/pengaturan', icon: 'pi pi-cog' })
   }
