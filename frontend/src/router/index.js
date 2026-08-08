@@ -96,6 +96,12 @@ const routes = [
         meta: { title: 'Konfirmasi Penerimaan', roles: ['super_admin', 'admin'] },
       },
       {
+        path: 'audit',
+        name: 'audit',
+        component: () => import('@/pages/audit/AuditTrailPage.vue'),
+        meta: { title: 'Audit Trail', roles: ['super_admin', 'admin'] },
+      },
+      {
         path: 'pengaturan',
         name: 'pengaturan',
         component: () => import('@/pages/PengaturanPage.vue'),

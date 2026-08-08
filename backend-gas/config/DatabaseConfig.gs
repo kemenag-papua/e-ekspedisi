@@ -19,7 +19,7 @@ var DatabaseConfig = (function () {
   // Cara mendapatkan ID:
   // 1. Jalankan scripts/setup-spreadsheet.gs di Google Apps Script Editor
   // 2. Salin nilai SPREADSHEET_ID dari log hasil setup
-  var SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID';
+  var SPREADSHEET_ID = '1pby_-gceqlEtTWwURCjak2ji1z_214CtnBgjXxDrHhg';
 
   var SHEETS = {
     SURAT_KELUAR: 'surat_keluar',

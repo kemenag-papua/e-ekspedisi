@@ -143,6 +143,19 @@ var PenerimaanService = (function () {
     var username = user ? user.username : 'system';
     AuditService.log(username, 'CONFIRM_PENERIMAAN', 'penerimaan', 'Success', ekspedisi.surat_id);
 
+    // BR-DOC-002: Generate PDF bukti penerimaan otomatis
+    try {
+      var surat = SuratRepository.findById(ekspedisi.surat_id);
+      var pdfResult = PdfService.generateBuktiPenerimaan(penerimaan, surat, ekspedisi);
+      PenerimaanRepository.update(penerimaan.id, { pdf_bukti: pdfResult.id });
+      AuditService.log(username, 'GENERATE_PDF', 'penerimaan', 'Success', ekspedisi.surat_id);
+      penerimaan.pdf_bukti = pdfResult.id;
+    } catch (e) {
+      Logger.error('PenerimaanService', 'Gagal generate PDF bukti penerimaan', e.message);
+      AuditService.log(username, 'GENERATE_PDF', 'penerimaan', 'Fail', ekspedisi.surat_id);
+      // PDF gagal tidak membatalkan penerimaan — ditandai untuk retry manual
+    }
+
     return penerimaan;
   }
 

@@ -25,6 +25,7 @@ const menuItems = computed(() => {
         { name: 'Pegawai', to: '/master/pegawai', icon: 'pi pi-users' },
       ],
     })
+    items.push({ name: 'Audit Trail', to: '/audit', icon: 'pi pi-history' })
   }
   if (auth.isSuperAdmin) {
     items.push({ name: 'Pengaturan', to: '/pengaturan', icon: 'pi pi-cog' })

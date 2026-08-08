@@ -185,6 +185,7 @@ function setupDatabase() {
       ['gps_enabled', 'true', 'GPS wajib pada konfirmasi penerimaan'],
       ['max_upload_mb', '5', 'Batas maksimal ukuran file upload (MB)'],
       ['nama_instansi', 'Instansi Pemerintah', 'Nama instansi untuk bukti penerimaan'],
+      ['app_url', '', 'URL aplikasi frontend untuk QR verifikasi (contoh: https://app.instansi.go.id)'],
     ];
     ss.getSheetByName('konfigurasi').getRange(2, 1, configRows.length, 3).setValues(configRows);
   } else {
@@ -225,8 +226,7 @@ function setupDatabase() {
  * Tes koneksi ke spreadsheet yang sudah dikonfigurasi
  * @returns {boolean}
  */
-function testDatabaseConnection() {
-  var props = PropertiesService.getScriptProperties();
+function testDatabaseConnection() {  var props = PropertiesService.getScriptProperties();
   var id = props.getProperty('SPREADSHEET_ID');
   if (!id) {
     Logger.log('SPREADSHEET_ID belum di-set. Jalankan setupDatabase() terlebih dahulu.');
@@ -239,4 +239,35 @@ function testDatabaseConnection() {
   Logger.log('Spreadsheet: ' + ss.getName());
   Logger.log('Sheets: ' + sheets.join(', '));
   return true;
+}
+
+/**
+ * Atur URL aplikasi frontend untuk QR verifikasi di PDF.
+ * Jalankan setelah setupDatabase() dan setelah frontend di-deploy.
+ * Contoh: updateAppUrl('https://app.instansi.go.id')
+ * @param {string} url - URL frontend
+ */
+function updateAppUrl(url) {
+  var props = PropertiesService.getScriptProperties();
+  var id = props.getProperty('SPREADSHEET_ID');
+  if (!id) {
+    Logger.log('SPREADSHEET_ID belum di-set. Jalankan setupDatabase() terlebih dahulu.');
+    return;
+  }
+  var ss = SpreadsheetApp.openById(id);
+  var sheet = ss.getSheetByName('konfigurasi');
+  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  var data = sheet.getDataRange().getValues();
+  var found = false;
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0] === 'app_url') {
+      sheet.getRange(i + 1, 2).setValue(url);
+      found = true;
+      break;
+    }
+  }
+  if (!found) {
+    sheet.appendRow(['app_url', url, 'URL aplikasi frontend untuk QR verifikasi']);
+  }
+  Logger.log('==> app_url di-set ke: ' + url);
 }
