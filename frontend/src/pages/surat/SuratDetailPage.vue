@@ -55,7 +55,8 @@ const pdfPreviewUrl = () => {
 }
 
 const verifyBaseUrl = () => {
-  return import.meta.env.VITE_APP_URL || window.location.origin
+  const base = import.meta.env.BASE_URL || '/'
+  return (import.meta.env.VITE_APP_URL || window.location.origin) + base.replace(/\/$/, '')
 }
 
 const buildQrContent = () => {

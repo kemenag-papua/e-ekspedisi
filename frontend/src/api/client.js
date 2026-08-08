@@ -29,8 +29,10 @@ function forceLogout() {
   localStorage.removeItem('auth_token')
   localStorage.removeItem('auth_user')
   localStorage.removeItem('auth_token_expires')
-  if (window.location.pathname !== '/login') {
-    window.location.href = '/login'
+  const base = import.meta.env.BASE_URL || '/'
+  const loginPath = `${base}login`
+  if (!window.location.pathname.endsWith('/login')) {
+    window.location.href = loginPath
   }
 }
 
