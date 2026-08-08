@@ -11,7 +11,7 @@ const sidebarOpen = ref(false)
 
 const menuItems = computed(() => {
   const items = []
-  if (auth.isAdmin || auth.isSuperAdmin || auth.isPimpinan) {
+  if (auth.isAuthenticated) {
     items.push({ name: 'Dashboard', to: '/dashboard', icon: 'pi pi-home' })
   }
   if (auth.isAdmin || auth.isSuperAdmin) {

@@ -73,7 +73,6 @@ Router.add('GET', '/api/v1/health', function () {
 
 /**
  * Registrasi route module
- * TODO: Sprint 7 - DashboardController.registerRoutes()
  */
 function registerRoutes() {
   AuthController.registerRoutes();
@@ -84,6 +83,7 @@ function registerRoutes() {
   AuditController.registerRoutes();
   PenerimaanController.registerRoutes();
   VerifyController.registerRoutes();
+  DashboardController.registerRoutes();
 }
 
 registerRoutes();
