@@ -16,7 +16,7 @@
           if (path) {
             var cleanPath = decodeURIComponent(path)
             var base = window.location.pathname.split('?')[0]
-            var target = base.replace(/index\.html$/, '') + cleanPath
+            var target = base.replace(/index\.html$/, '').replace(/\/$/, '') + cleanPath
             window.history.replaceState({}, '', target)
           }
         } catch (e) {
