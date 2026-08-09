@@ -1,17 +1,17 @@
 /**
  * CorsHandler.gs
  *
- * Handler CORS untuk Google Apps Script Web App.
- * Menangani preflight request (OPTIONS) dan menambahkan header CORS.
+ * CATATAN (per analisis & testing):
+ * ContentService GAS TIDAK mendukung custom HTTP headers, jadi kode
+ * berikut TIDAK pernah benar-benar menambahkan header CORS ke response.
+ * Google menangani CORS preflight/response secara infrastruktur untuk
+ * web app dengan access ANYONE.
+ *
+ * Fungsi ini dipertahankan minimal hanya untuk kompatibilitas panggilan
+ * (isPreflight) dari Code.gs; tidak ada logika header yang menyesatkan.
  */
 
 var CorsHandler = (function () {
-  var ALLOWED_ORIGINS = [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'https://*.apps.googleusercontent.com',
-  ];
-
   /**
    * Cek apakah request adalah preflight (OPTIONS)
    * @param {object} request - Event request
@@ -22,64 +22,18 @@ var CorsHandler = (function () {
   }
 
   /**
-   * Mendapatkan origin yang diizinkan
+   * Catatan: GAS tidak mendukung custom CORS headers pada ContentService.
+   * Response JSON dari web app ANYONE otomatis diberi
+   * Access-Control-Allow-Origin oleh infrastruktur Google.
    * @param {object} request - Event request
-   * @returns {string} Origin atau null
-   */
-  function getOrigin(request) {
-    var headers = request.headers || {};
-    var origin = headers['Origin'] || headers['origin'] || '';
-    if (origin && origin.indexOf('localhost') !== -1) {
-      return origin;
-    }
-    return ALLOWED_ORIGINS.indexOf(origin) !== -1 ? origin : null;
-  }
-
-  /**
-   * Membuat response untuk preflight request
-   * @param {object} request - Event request
-   * @returns {object} Response OPTIONS
+   * @returns {object} Response OPTIONS kosong
    */
   function handlePreflight(request) {
-    var origin = getOrigin(request);
-    var response = ContentService.createTextOutput();
-    if (origin) {
-      response.setMimeType(ContentService.MimeType.TEXT);
-      response.setContent('');
-      var headers = {
-        'Access-Control-Allow-Origin': origin,
-        'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type,Authorization',
-        'Access-Control-Max-Age': '3600',
-      };
-      return response;
-    }
-    response.setMimeType(ContentService.MimeType.TEXT);
-    response.setContent('Forbidden');
-    return response;
-  }
-
-  /**
-   * Menambahkan header CORS ke response.
-   * Catatan: GAS ContentService tidak mendukung custom headers.
-   * Untuk Web App deployment, Google menangani CORS pada response aktual.
-   * Fungsi ini memastikan MIME type JSON.
-   * @param {object} response - Response dari ContentService
-   * @param {object} request - Event request
-   * @returns {object} Response dengan MIME JSON
-   */
-  function addCorsHeaders(response, request) {
-    var origin = getOrigin(request);
-    if (origin) {
-      response.setMimeType(ContentService.MimeType.JSON);
-    }
-    return response;
+    return ContentService.createTextOutput('').setMimeType(ContentService.MimeType.TEXT);
   }
 
   return {
     isPreflight: isPreflight,
     handlePreflight: handlePreflight,
-    addCorsHeaders: addCorsHeaders,
-    getOrigin: getOrigin,
   };
 })();
