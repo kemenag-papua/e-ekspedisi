@@ -140,7 +140,15 @@ async function handleSubmit() {
       </h3>
     </div>
 
-    <form class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm" @submit.prevent="handleSubmit">
+    <div v-if="loading" class="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-400">
+      Memuat data...
+    </div>
+
+    <form
+      v-else
+      class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+      @submit.prevent="handleSubmit"
+    >
       <div class="space-y-4">
         <div>
           <label for="nomor_surat" class="mb-1 block text-sm font-medium text-slate-700">

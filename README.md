@@ -59,6 +59,49 @@ Aturan:
 - Repository menangani akses Spreadsheet dan Drive.
 - Tidak boleh mengakses Spreadsheet langsung dari Controller.
 
+## Arsitektur Transport API GAS (PENTING)
+
+Frontend Vue di-hosting terpisah (GitHub Pages) memanggil backend Google Apps Script Web App secara cross-origin. Karena keterbatasan GAS, transport API menggunakan **pola khusus** yang WAJIB dipertahankan:
+
+### 1. Routing via Query Param `?path=` (bukan pathInfo)
+
+**Bug Google Issue Tracker #160622846:** `e.pathInfo` pada GAS Web App memicu halaman sign-in Google untuk user anonim, sehingga request dengan path tambahan (`/exec/api/v1/...`) gagal. Query string **tidak** terpengaruh bug ini.
+
+- Backend `RequestParser.gs`: membaca route dari query param `?path=` (fallback ke pathInfo).
+- Frontend `api/client.js`: interceptor mengubah `/auth/login` → `?path=/api/v1/auth/login`.
+- Base URL frontend: `.../exec` (tanpa `/api/v1`).
+
+### 2. Method HTTP: `e.method` Tidak Ada di GAS
+
+Objek event GAS **tidak punya properti `.method`**. Tanpa fix, semua request (termasuk POST) ter-parse sebagai `GET` → semua route POST/PUT/DELETE mengembalikan 404.
+
+- `Code.gs`: `doGet(e)` set `e.method = 'GET'`, `doPost(e)` set `e.method = 'POST'` secara eksplisit.
+
+### 3. PUT/DELETE via `?_method=` Override
+
+GAS Web App **hanya** menyediakan `doGet`/`doPost` (tidak ada `doPut`/`doDelete`). Request HTTP PUT/DELETE asli tidak dapat ditangani.
+
+- Frontend `api/client.js`: interceptor mengubah `put`/`delete` → `post` + query `?_method=PUT`/`?_method=DELETE`.
+- Backend `RequestParser.gs`: membaca method dari `?._method` override.
+
+### 4. CORS: Hindari Preflight & Credentials
+
+- `Content-Type: text/plain` (bukan `application/json`) → request sederhana, tanpa preflight OPTIONS.
+- Token auth dikirim via query param `?token=` (bukan header `Authorization`).
+- **TIDAK menggunakan** `withCredentials` (berkonflik dengan `Access-Control-Allow-Origin: *` dari GAS).
+
+### Contoh Request Aktual
+
+```
+POST https://script.google.com/macros/s/{DEPLOYMENT_ID}/exec?path=%2Fapi%2Fv1%2Fauth%2Flogin&token=xxx
+Content-Type: text/plain
+Body: {"username":"admin","password":"..."}
+```
+
+### Konsekuensi
+- Seluruh modul API di `frontend/src/api/*.js` memakai `apiClient` yang sudah menangani transformasi ini — jangan panggil axios langsung dengan URL/path biasa.
+- Deployment backend harus dibuat ulang (**New version**) setelah perubahan kode GAS.
+
 ## Prasyarat
 
 - Node.js >= 20
