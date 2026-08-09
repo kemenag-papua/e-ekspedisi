@@ -60,6 +60,14 @@ apiClient.interceptors.request.use(
       return Promise.reject(new Error('Token kedaluwarsa'))
     }
 
+    // GAS Web App hanya punya doGet/doPost (tidak ada doPut/doDelete).
+    // Konversi PUT/DELETE -> POST + query ?_method=PUT/DELETE
+    const origMethod = (config.method || 'get').toLowerCase()
+    if (origMethod === 'put' || origMethod === 'delete') {
+      config.method = 'post'
+      config.params = { ...(config.params || {}), _method: origMethod.toUpperCase() }
+    }
+
     // BUG GAS #160622846: pathInfo setelah /exec memicu sign-in wall untuk anonim.
     // Solusi: pindahkan route dari path ke query param `?path=`.
     // Contoh: apiClient.post('/auth/login') -> .../exec?path=%2Fapi%2Fv1%2Fauth%2Flogin

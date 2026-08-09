@@ -12,7 +12,16 @@ var RequestParser = (function () {
    * @returns {object} { method, path, params, query, body, headers }
    */
   function parse(request) {
-    var method = (request.method || 'GET').toUpperCase();
+    // GAS hanya menyediakan doGet/doPost (tidak ada doPut/doDelete).
+    // Method diambil dari: (1) query ?_method= override (untuk PUT/DELETE via POST),
+    // (2) request.method yang di-set eksplisit di Code.gs doGet/doPost.
+    var method = 'GET';
+    if (request.parameter && request.parameter._method) {
+      method = String(request.parameter._method);
+    } else if (request.method) {
+      method = String(request.method);
+    }
+    method = method.toUpperCase();
     // BUG GAS #160622846: e.pathInfo memicu sign-in wall untuk user anonim.
     // Solusi: baca route dari query param `path` (tidak memicu bug),
     // fallback ke pathInfo untuk kompatibilitas.

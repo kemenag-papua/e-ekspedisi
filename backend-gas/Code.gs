@@ -20,6 +20,9 @@ var routesRegistered = false;
  * @returns {object} Response
  */
 function doGet(e) {
+  // GAS event object TIDAK punya properti .method.
+  // Set eksplisit agar RequestParser tahu method sebenarnya (fix bug semua POST/PUT/DELETE 404).
+  e.method = 'GET';
   if (CorsHandler.isPreflight(e)) {
     return CorsHandler.handlePreflight(e);
   }
@@ -32,6 +35,9 @@ function doGet(e) {
  * @returns {object} Response
  */
 function doPost(e) {
+  // GAS event object TIDAK punya properti .method.
+  // Set eksplisit agar RequestParser tahu method sebenarnya (fix bug semua POST/PUT/DELETE 404).
+  e.method = 'POST';
   if (CorsHandler.isPreflight(e)) {
     return CorsHandler.handlePreflight(e);
   }
