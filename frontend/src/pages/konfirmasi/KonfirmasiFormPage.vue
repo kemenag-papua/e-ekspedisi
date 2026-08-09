@@ -333,6 +333,9 @@ onBeforeUnmount(() => {
         <Button label="Batal" severity="secondary" @click="router.back()" />
         <Button label="Simpan Konfirmasi" icon="pi pi-check" type="submit" :loading="submitting" />
       </div>
+
+      <!-- Canvas tersembunyi untuk capture foto dari kamera (fix Bug 1) -->
+      <canvas ref="cameraCanvasRef" class="hidden"></canvas>
     </form>
   </div>
 </template>
