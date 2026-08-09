@@ -13,7 +13,19 @@ var RequestParser = (function () {
    */
   function parse(request) {
     var method = (request.method || 'GET').toUpperCase();
-    var path = request.pathInfo || '';
+    // BUG GAS #160622846: e.pathInfo memicu sign-in wall untuk user anonim.
+    // Solusi: baca route dari query param `path` (tidak memicu bug),
+    // fallback ke pathInfo untuk kompatibilitas.
+    var path = '';
+    if (request.parameter && request.parameter.path) {
+      try {
+        path = decodeURIComponent(String(request.parameter.path));
+      } catch (e) {
+        path = String(request.parameter.path);
+      }
+    } else {
+      path = request.pathInfo || '';
+    }
     var params = request.parameter || {};
     var headers = request.headers || {};
     var body = null;

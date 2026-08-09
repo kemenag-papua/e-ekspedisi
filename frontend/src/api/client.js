@@ -59,10 +59,18 @@ apiClient.interceptors.request.use(
       forceLogout()
       return Promise.reject(new Error('Token kedaluwarsa'))
     }
+
+    // BUG GAS #160622846: pathInfo setelah /exec memicu sign-in wall untuk anonim.
+    // Solusi: pindahkan route dari path ke query param `?path=`.
+    // Contoh: apiClient.post('/auth/login') -> .../exec?path=%2Fapi%2Fv1%2Fauth%2Flogin
+    const route = config.url || ''
+    config.url = ''
+    config.params = { ...(config.params || {}), path: '/api/v1' + route }
+
+    // Kirim token via query param (bukan header) untuk hindari CORS preflight
     const token = localStorage.getItem('auth_token')
     if (token) {
-      // Kirim token via query param (bukan header) untuk hindari CORS preflight
-      config.params = { ...(config.params || {}), token }
+      config.params.token = token
     }
     return config
   },
