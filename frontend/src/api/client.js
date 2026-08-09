@@ -75,10 +75,12 @@ apiClient.interceptors.request.use(
     config.url = ''
     config.params = { ...(config.params || {}), path: '/api/v1' + route }
 
-    // Kirim token via query param (bukan header) untuk hindari CORS preflight
-    const token = localStorage.getItem('auth_token')
-    if (token) {
-      config.params.token = token
+    // Kirim session token via query param ?auth_token= (bukan header) untuk
+    // hindari CORS preflight. Nama 'auth_token' khusus agar TIDAK bentrok
+    // dengan ?token= yang dipakai QR verification (VerifyController).
+    const sessionToken = localStorage.getItem('auth_token')
+    if (sessionToken) {
+      config.params.auth_token = sessionToken
     }
     return config
   },

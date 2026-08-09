@@ -17,7 +17,7 @@ var AuthMiddleware = (function () {
   };
 
   /**
-   * Mendapatkan token dari header Authorization atau query param (?token=)
+   * Mendapatkan token dari header Authorization atau query param (?auth_token=)
    * Menerima raw event dari GAS atau parsed request.
    * @param {object} request - Event request atau parsed request
    * @returns {string} Token atau string kosong
@@ -25,12 +25,14 @@ var AuthMiddleware = (function () {
   function getToken(request) {
     if (!request) return '';
 
-    // 1. Dari query param ?token= (strategi CORS - hindari header custom)
+    // 1. Dari query param ?auth_token= (strategi CORS - hindari header custom).
+    //    Nama param khusus 'auth_token' agar TIDAK bentrok dengan 'token'
+    //    yang dipakai QR verification (VerifyController membaca ?token=).
     var queryToken = '';
-    if (request.query && request.query.token) {
-      queryToken = String(request.query.token);
-    } else if (request.parameter && request.parameter.token) {
-      queryToken = String(request.parameter.token);
+    if (request.query && request.query.auth_token) {
+      queryToken = String(request.query.auth_token);
+    } else if (request.parameter && request.parameter.auth_token) {
+      queryToken = String(request.parameter.auth_token);
     }
     if (queryToken) return queryToken;
 
